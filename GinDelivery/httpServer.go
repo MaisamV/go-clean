@@ -2,12 +2,12 @@ package GinDelivery
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"os"
 )
 
 type Server struct {
-	Engine *gin.Engine
+	Engine      *gin.Engine
+	Interactors *InteractorPackage
 }
 
 func (m *Server) Init() error {
@@ -15,17 +15,12 @@ func (m *Server) Init() error {
 	if err != nil {
 		return err
 	}
+	m.setInteractors()
 	m.Engine = gin.Default()
-	m.Engine.GET("/ping", ping)
+	m.addRoutes()
 	return err
 }
 
 func (m *Server) Serv() error {
 	return m.Engine.Run()
-}
-
-func ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
 }

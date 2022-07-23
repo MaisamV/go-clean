@@ -1,12 +1,15 @@
 package main
 
 import (
+	"GoCleanMicroservice/Core"
 	"GoCleanMicroservice/Delivery"
+	"GoCleanMicroservice/Domain"
 	"GoCleanMicroservice/GinDelivery"
 )
 
 func main() {
-	var server = createServer()
+	var pingInteractor = createInteractor()
+	var server = createServer(&pingInteractor)
 	err := server.Init()
 	if err != nil {
 		return
@@ -17,6 +20,10 @@ func main() {
 	}
 }
 
-func createServer() Delivery.Server {
-	return &GinDelivery.Server{}
+func createInteractor() Domain.PingInteractor {
+	return &Core.PingInteractor{}
+}
+
+func createServer(i *Domain.PingInteractor) Delivery.Server {
+	return &GinDelivery.Server{Interactors: &GinDelivery.InteractorPackage{Interactor: i}}
 }
