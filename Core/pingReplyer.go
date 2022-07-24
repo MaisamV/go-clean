@@ -1,11 +1,13 @@
 package Core
 
-import "GoCleanMicroservice/Domain"
+import (
+	"GoCleanMicroservice/Domain/Model"
+)
 
 type PingInteractor struct {
 }
 
-func (i *PingInteractor) Ping() (Domain.BaseResponse, error) {
-	res := Domain.BaseResponse{Message: "PONG"}
+func (i *PingInteractor) Ping() (Model.BaseResponse, error) {
+	res := Model.BaseResponse{Message: "PONG"}
 	return res, nil
 }

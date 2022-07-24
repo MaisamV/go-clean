@@ -1,5 +1,7 @@
 package Domain
 
+import "GoCleanMicroservice/Domain/Model"
+
 type PingInteractor interface {
-	Ping() (BaseResponse, error)
+	Ping() (Model.BaseResponse, error)
 }
