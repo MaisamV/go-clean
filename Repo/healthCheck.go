@@ -1,5 +1,7 @@
 package Repo
 
+import "GoCleanMicroservice/Domain/Model"
+
 type HealthRepo interface {
-	Check() bool
+	Check() Model.HealthResponse
 }
