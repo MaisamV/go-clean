@@ -6,9 +6,9 @@ import (
 )
 
 type HealthInteractor struct {
-	repo *Repo.HealthRepo
+	HealthRepo *Repo.HealthRepo
 }
 
 func (i *HealthInteractor) Health() Model.HealthResponse {
-	return (*i.repo).Check()
+	return (*(i.HealthRepo)).Check()
 }
