@@ -38,10 +38,10 @@ func createHealthRepo() Repo.HealthRepo {
 	return &PgxRepo.HealthRepo{Pool: pool}
 }
 
-func createServer(i *GinDelivery.InteractorPackage) Delivery.Server {
+func createServer(i *Domain.InteractorPackage) Delivery.Server {
 	return &GinDelivery.Server{Interactors: i}
 }
 
-func createInteractorPackage(p *Domain.PingInteractor, h *Domain.HealthInteractor) *GinDelivery.InteractorPackage {
-	return &GinDelivery.InteractorPackage{Interactor: p, Health: h}
+func createInteractorPackage(p *Domain.PingInteractor, h *Domain.HealthInteractor) *Domain.InteractorPackage {
+	return &Domain.InteractorPackage{Interactor: p, Health: h}
 }

@@ -1,13 +1,14 @@
 package GinDelivery
 
 import (
+	"GoCleanMicroservice/Domain"
 	"github.com/gin-gonic/gin"
 	"os"
 )
 
 type Server struct {
 	Engine      *gin.Engine
-	Interactors *InteractorPackage
+	Interactors *Domain.InteractorPackage
 }
 
 func (m *Server) Init() error {
