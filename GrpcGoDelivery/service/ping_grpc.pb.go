@@ -22,7 +22,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PingerClient interface {
-	// Sends a greeting
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingReply, error)
 }
 
@@ -47,7 +46,6 @@ func (c *pingerClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.C
 // All implementations must embed UnimplementedPingerServer
 // for forward compatibility
 type PingerServer interface {
-	// Sends a greeting
 	Ping(context.Context, *PingRequest) (*PingReply, error)
 	mustEmbedUnimplementedPingerServer()
 }

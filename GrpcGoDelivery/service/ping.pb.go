@@ -58,7 +58,6 @@ func (*PingRequest) Descriptor() ([]byte, []int) {
 	return file_GrpcGoDelivery_service_ping_proto_rawDescGZIP(), []int{0}
 }
 
-// The response message containing the greetings
 type PingReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
