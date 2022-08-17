@@ -9,9 +9,7 @@ import (
 var healthInteractor *interactor.HealthInteractor
 
 func InitHealthInteractor(p *interactor.HealthInteractor) {
-	if healthInteractor == nil {
-		healthInteractor = p
-	}
+	healthInteractor = p
 }
 
 func Health(c *gin.Context) {

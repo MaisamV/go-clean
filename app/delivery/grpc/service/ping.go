@@ -12,9 +12,7 @@ type PingServer struct {
 }
 
 func InitPingInteractor(p *interactor.PingInteractor) {
-	if pingInteractor == nil {
-		pingInteractor = p
-	}
+	pingInteractor = p
 }
 
 func (s *PingServer) Ping(ctx context.Context, request *PingRequest) (*PingReply, error) {

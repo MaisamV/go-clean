@@ -9,9 +9,7 @@ import (
 var pingInteractor *interactor.PingInteractor
 
 func InitPingInteractor(p *interactor.PingInteractor) {
-	if pingInteractor == nil {
-		pingInteractor = p
-	}
+	pingInteractor = p
 }
 
 func Ping(c *gin.Context) {

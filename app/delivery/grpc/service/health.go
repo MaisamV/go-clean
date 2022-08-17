@@ -12,9 +12,7 @@ type HealthServer struct {
 }
 
 func InitHealthInteractor(h *interactor.HealthInteractor) {
-	if healthInteractor == nil {
-		healthInteractor = h
-	}
+	healthInteractor = h
 }
 
 func (s *HealthServer) Health(ctx context.Context, request *HealthRequest) (*HealthReply, error) {
