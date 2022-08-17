@@ -6,10 +6,8 @@ import (
 
 func (m *Server) addRoutes() {
 	m.Engine.GET("/ping", route.Ping)
-	m.Engine.GET("/health", route.Health)
-}
-
-func (m *Server) setInteractors() {
 	route.InitPingInteractor(m.Interactors.Interactor)
+
+	m.Engine.GET("/health", route.Health)
 	route.InitHealthInteractor(m.Interactors.Health)
 }

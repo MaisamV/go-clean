@@ -16,7 +16,6 @@ func (m *Server) Init() error {
 	if err != nil {
 		return err
 	}
-	m.setInteractors()
 	m.Engine = gin.Default()
 	m.addRoutes()
 	return err
