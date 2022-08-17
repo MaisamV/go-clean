@@ -15,9 +15,8 @@ func (r *HealthRepo) Check() model.HealthResponse {
 	var err error
 	var elapsedTime = common.MeasureTime(func() {
 		var query, e = r.Pool.Query(context.Background(), "select 1;")
+		defer query.Close()
 		err = e
-		for query.Next() {
-		}
 	})
 	return model.HealthResponse{
 		IsConnected: err == nil,
