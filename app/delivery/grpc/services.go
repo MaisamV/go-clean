@@ -5,18 +5,26 @@ import (
 )
 
 func (m *Server) addServices() {
-	//ping
-	pingInteractor := m.Interactors.Ping
-	if pingInteractor == nil {
-		panic(any("Ping interactor cannot be null."))
-	}
-	service.InitPingInteractor(pingInteractor)
-	service.RegisterPingerServer(m.Engine, &service.PingServer{})
-	//health
+	m.addPing()
+	m.addHealth()
+}
+
+func (m *Server) addHealth() {
 	healthInteractor := m.Interactors.Health
-	if healthInteractor == nil {
-		panic(any("Health interactor cannot be null."))
-	}
+	panicOnNull("Health", healthInteractor)
 	service.InitHealthInteractor(m.Interactors.Health)
 	service.RegisterHealthCheckServer(m.Engine, &service.HealthServer{})
+}
+
+func (m *Server) addPing() {
+	pingInteractor := m.Interactors.Ping
+	panicOnNull("Ping", pingInteractor)
+	service.InitPingInteractor(pingInteractor)
+	service.RegisterPingerServer(m.Engine, &service.PingServer{})
+}
+
+func panicOnNull(interactorName string, interactor interface{}) {
+	if interactor == nil {
+		panic(any(interactorName + " interactor cannot be null."))
+	}
 }
