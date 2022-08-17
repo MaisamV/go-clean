@@ -5,17 +5,26 @@ import (
 )
 
 func (m *Server) addRoutes() {
-	pingInteractor := m.Interactors.Ping
-	if pingInteractor == nil {
-		panic(any("Ping interactor cannot be null."))
-	}
-	m.Engine.GET("/ping", route.Ping)
-	route.InitPingInteractor(pingInteractor)
+	m.addPing()
+	m.addHealth()
+}
 
+func (m *Server) addHealth() {
 	healthInteractor := m.Interactors.Health
-	if healthInteractor == nil {
-		panic(any("Health interactor cannot be null."))
-	}
+	panicOnNull("Health", healthInteractor)
 	m.Engine.GET("/health", route.Health)
 	route.InitHealthInteractor(healthInteractor)
+}
+
+func (m *Server) addPing() {
+	pingInteractor := m.Interactors.Ping
+	panicOnNull("Ping", pingInteractor)
+	m.Engine.GET("/ping", route.Ping)
+	route.InitPingInteractor(pingInteractor)
+}
+
+func panicOnNull(interactorName string, interactor interface{}) {
+	if interactor == nil {
+		panic(any(interactorName + " interactor cannot be null."))
+	}
 }
