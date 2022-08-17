@@ -48,6 +48,9 @@ func createHealthInteractor(healthRepo *repo.HealthRepo) interactor2.HealthInter
 
 func createHealthRepo() repo.HealthRepo {
 	pool, _ := (&pgx.PoolFactory{}).Create()
+	if pool == nil {
+		panic(any("Couldn't create database pool. Check DATABASE_URL environment variable, connection string and access to server."))
+	}
 	return &pgx.HealthRepo{Pool: pool}
 }
 
