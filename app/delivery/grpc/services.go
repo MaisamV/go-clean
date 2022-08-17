@@ -6,9 +6,17 @@ import (
 
 func (m *Server) addServices() {
 	//ping
-	service.InitPingInteractor(m.Interactors.Interactor)
+	pingInteractor := m.Interactors.Interactor
+	if pingInteractor == nil {
+		panic(any("Ping interactor cannot be null."))
+	}
+	service.InitPingInteractor(pingInteractor)
 	service.RegisterPingerServer(m.Engine, &service.PingServer{})
 	//health
+	healthInteractor := m.Interactors.Health
+	if healthInteractor == nil {
+		panic(any("Health interactor cannot be null."))
+	}
 	service.InitHealthInteractor(m.Interactors.Health)
 	service.RegisterHealthCheckServer(m.Engine, &service.HealthServer{})
 }
