@@ -20,7 +20,6 @@ type Server struct {
 
 func (m *Server) Init() error {
 	m.Engine = grpc.NewServer()
-	m.setInteractors()
 	m.addServices()
 	return nil
 }
