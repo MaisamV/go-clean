@@ -56,7 +56,7 @@ func createServer(i *domain.InteractorPackage) delivery.Server {
 }
 
 func createInteractorPackage(p *interactor2.PingInteractor, h *interactor2.HealthInteractor) *domain.InteractorPackage {
-	return &domain.InteractorPackage{Interactor: p, Health: h}
+	return &domain.InteractorPackage{Ping: p, Health: h}
 }
 
 func createGrpcServer(i *domain.InteractorPackage) delivery.Server {

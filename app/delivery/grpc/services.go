@@ -6,7 +6,7 @@ import (
 
 func (m *Server) addServices() {
 	//ping
-	pingInteractor := m.Interactors.Interactor
+	pingInteractor := m.Interactors.Ping
 	if pingInteractor == nil {
 		panic(any("Ping interactor cannot be null."))
 	}
