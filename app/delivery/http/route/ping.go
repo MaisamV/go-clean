@@ -8,8 +8,8 @@ import (
 
 var pingInteractor *interactor.PingInteractor
 
-func InitPingInteractor(p *interactor.PingInteractor) {
-	pingInteractor = p
+func InitPingInteractor(p any) {
+	pingInteractor = p.(*interactor.PingInteractor)
 }
 
 func Ping(c *gin.Context) {

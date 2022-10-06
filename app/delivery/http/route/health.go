@@ -8,8 +8,8 @@ import (
 
 var healthInteractor *interactor.HealthInteractor
 
-func InitHealthInteractor(p *interactor.HealthInteractor) {
-	healthInteractor = p
+func InitHealthInteractor(p any) {
+	healthInteractor = p.(*interactor.HealthInteractor)
 }
 
 func Health(c *gin.Context) {
