@@ -1,11 +1,13 @@
 module GoCleanMicroservice
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.0
 	github.com/jackc/pgx/v4 v4.16.1
+	golang.org/x/net v0.0.0-20220526153639-5463443f8c37
 	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
@@ -35,10 +37,8 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
