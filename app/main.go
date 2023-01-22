@@ -3,11 +3,11 @@ package main
 import (
 	"GoCleanMicroservice/abstract/delivery"
 	"GoCleanMicroservice/abstract/domain"
-	interactor2 "GoCleanMicroservice/abstract/domain/interactor"
+	"GoCleanMicroservice/abstract/domain/interactor"
 	"GoCleanMicroservice/abstract/repo"
 	"GoCleanMicroservice/app/delivery/grpc"
 	"GoCleanMicroservice/app/delivery/http"
-	interactor3 "GoCleanMicroservice/app/domain/app/interactor"
+	app "GoCleanMicroservice/app/domain/app/interactor"
 	"GoCleanMicroservice/app/repo/pgx"
 )
 
@@ -38,12 +38,12 @@ func main() {
 	}
 }
 
-func createPingInteractor() interactor2.PingInteractor {
-	return &interactor3.PingInteractor{}
+func createPingInteractor() interactor.PingInteractor {
+	return &app.PingInteractor{}
 }
 
-func createHealthInteractor(healthRepo *repo.HealthRepo) interactor2.HealthInteractor {
-	return &interactor3.HealthInteractor{HealthRepo: healthRepo}
+func createHealthInteractor(healthRepo *repo.HealthRepo) interactor.HealthInteractor {
+	return &app.HealthInteractor{HealthRepo: healthRepo}
 }
 
 func createHealthRepo() repo.HealthRepo {
@@ -58,7 +58,7 @@ func createServer(i *domain.InteractorPackage) delivery.Server {
 	return &http.Server{Interactors: i}
 }
 
-func createInteractorPackage(p *interactor2.PingInteractor, h *interactor2.HealthInteractor) *domain.InteractorPackage {
+func createInteractorPackage(p *interactor.PingInteractor, h *interactor.HealthInteractor) *domain.InteractorPackage {
 	return &domain.InteractorPackage{Ping: p, Health: h}
 }
 
