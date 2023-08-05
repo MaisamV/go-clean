@@ -2,9 +2,9 @@ package pgx
 
 import (
 	"GoCleanMicroservice/abstract/domain/model"
-	"GoCleanMicroservice/common"
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/maisamv/monitor"
 )
 
 type HealthRepo struct {
@@ -13,7 +13,7 @@ type HealthRepo struct {
 
 func (r *HealthRepo) Check() model.HealthResponse {
 	var err error
-	var elapsedTime = common.MeasureTime(func() {
+	var elapsedTime = monitor.MeasureTime(func() {
 		var query, e = r.Pool.Query(context.Background(), "select 1;")
 		defer query.Close()
 		err = e
