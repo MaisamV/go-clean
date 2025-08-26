@@ -5,7 +5,7 @@ These features serve as foundational APIs for all projects based on this templat
 
 ---
 
-## 1. Ping API
+## 1. Ping API ✅ **IMPLEMENTED**
 
 ### Purpose
 Provides a lightweight endpoint to verify the service is alive and responding.
@@ -17,11 +17,20 @@ Provides a lightweight endpoint to verify the service is alive and responding.
   - **Content-Type:** `application/json`
   - **Body:** `{"message": "PONG"}`
 
+### Implementation Details
+- **Module:** `internal/ping`
+- **Handler:** `internal/ping/infrastructure/http/ping_handler.go`
+- **Service:** `internal/ping/application/ping_service.go`
+- **Domain:** `internal/ping/domain/ping.go`
+- **Port:** `internal/ping/ports/ping_port.go`
+
 ### Usage
 - Used as a simple health check and readiness probe in Kubernetes.
+- Available at: `http://localhost:8080/ping`
 
 ### Notes
 - Always returns success unless the service is fully down.
+- Follows clean architecture principles with proper separation of concerns.
 
 ---
 
