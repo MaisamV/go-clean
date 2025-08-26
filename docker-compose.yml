@@ -60,28 +60,43 @@ services:
     ]
     restart: "no"
 
-  # Application (uncomment when ready to run the app)
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: go-clean-app
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - DATABASE_URL=postgres://postgres:password@postgres:5432/go_clean_db?sslmode=disable
-  #     - REDIS_URL=redis://redis:6379
-  #     - APP_ENV=development
-  #   networks:
-  #     - go-clean-network
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #     migrate:
-  #       condition: service_completed_successfully
-  #   restart: unless-stopped
+  # Go Clean Architecture Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-clean-app
+    ports:
+      - "8080:8080"
+    environment:
+      - GO_CLEAN_DATABASE_HOST=postgres
+      - GO_CLEAN_DATABASE_PORT=5432
+      - GO_CLEAN_DATABASE_USER=postgres
+      - GO_CLEAN_DATABASE_PASSWORD=password
+      - GO_CLEAN_DATABASE_DBNAME=go_clean_db
+      - GO_CLEAN_DATABASE_SSLMODE=disable
+      - GO_CLEAN_REDIS_HOST=redis
+      - GO_CLEAN_REDIS_PORT=6379
+      - GO_CLEAN_APP_ENVIRONMENT=development
+      - GO_CLEAN_APP_DEBUG=true
+      - GO_CLEAN_SERVER_HOST=0.0.0.0
+      - GO_CLEAN_SERVER_PORT=8080
+    networks:
+      - go-clean-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:

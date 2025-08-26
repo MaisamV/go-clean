@@ -1,0 +1,70 @@
+basePath: /
+definitions:
+  domain.PingResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  http.HealthCheck:
+    properties:
+      name:
+        type: string
+      status:
+        type: string
+    type: object
+  http.HealthResponse:
+    properties:
+      checks:
+        items:
+          $ref: '#/definitions/http.HealthCheck'
+        type: array
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: A clean architecture implementation in Go with comprehensive API documentation
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Go Clean Architecture API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the service and its dependencies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.HealthResponse'
+      summary: Health check endpoint
+      tags:
+      - health
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: Returns a simple PONG response to verify service is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.PingResponse'
+      summary: Ping endpoint
+      tags:
+      - health
+schemes:
+- http
+- https
+swagger: "2.0"

@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: Go Clean Architecture API
+  description: |
+    A RESTful API built with Go following Clean Architecture principles.
+    This API provides a modular monolith structure with clear separation of concerns.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@go-clean-api.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.go-clean.com
+    description: Production server
+
+paths:
+  /ping:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns a simple PONG response to verify the service is running
+      operationId: ping
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+              example:
+                message: "PONG"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/docs:
+    get:
+      tags:
+        - Documentation
+      summary: Get OpenAPI specification
+      description: Returns the OpenAPI specification in JSON format
+      operationId: getOpenAPISpec
+      responses:
+        '200':
+          description: OpenAPI specification
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/docs/swagger:
+    get:
+      tags:
+        - Documentation
+      summary: Swagger UI
+      description: Interactive API documentation using Swagger UI
+      operationId: getSwaggerUI
+      responses:
+        '200':
+          description: Swagger UI HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Detailed health check
+      description: Returns detailed health information including database and Redis connectivity
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service and dependencies are healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service or dependencies are unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  schemas:
+    PingResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The ping response message
+          example: "PONG"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type or code
+          example: "INTERNAL_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "An internal server error occurred"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: "2024-01-15T10:30:00Z"
+        request_id:
+          type: string
+          description: Unique request identifier for tracing
+          example: "req_123456789"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "unhealthy"]
+          description: Overall health status
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp
+          example: "2024-01-15T10:30:00Z"
+        version:
+          type: string
+          description: Application version
+          example: "1.0.0"
+        uptime:
+          type: string
+          description: Application uptime
+          example: "2h30m45s"
+        checks:
+          type: object
+          description: Individual health checks
+          properties:
+            database:
+              $ref: '#/components/schemas/HealthCheck'
+            redis:
+              $ref: '#/components/schemas/HealthCheck'
+
+    HealthCheck:
+      type: object
+      required:
+        - status
+        - response_time
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "unhealthy"]
+          description: Component health status
+          example: "healthy"
+        response_time:
+          type: string
+          description: Response time for the health check
+          example: "2ms"
+        error:
+          type: string
+          description: Error message if unhealthy
+          example: "Connection timeout"
+        last_checked:
+          type: string
+          format: date-time
+          description: Last health check timestamp
+          example: "2024-01-15T10:30:00Z"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+tags:
+  - name: Health
+    description: Health check and monitoring endpoints
+  - name: Documentation
+    description: API documentation endpoints
+
+externalDocs:
+  description: Find more info about Go Clean Architecture
+  url: https://github.com/your-org/go-clean-architecture

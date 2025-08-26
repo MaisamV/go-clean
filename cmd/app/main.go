@@ -1,3 +1,14 @@
+// @title Go Clean Architecture API
+// @version 1.0
+// @description A clean architecture implementation in Go with comprehensive API documentation
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email support@example.com
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+// @host localhost:8080
+// @BasePath /
+// @schemes http https
 package main
 
 import (
@@ -7,9 +18,14 @@ import (
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 
+	_ "github.com/go-clean/docs" // Import generated docs
 	"github.com/go-clean/internal/ping/application"
 	pingHttp "github.com/go-clean/internal/ping/infrastructure/http"
+	docsApp "github.com/go-clean/internal/docs/application"
+	"github.com/go-clean/internal/docs/infrastructure"
+	docsHttp "github.com/go-clean/internal/docs/infrastructure/http"
 	"github.com/go-clean/platform/config"
 	"github.com/go-clean/platform/http"
 	"github.com/go-clean/platform/logger"
@@ -30,12 +46,24 @@ func main() {
 	pingService := application.NewPingService()
 	pingHandler := pingHttp.NewPingHandler(pingService)
 
+	// Initialize docs module
+	docsAdapter := infrastructure.NewDocsAdapter("./api")
+	docsService := docsApp.NewDocsService(docsAdapter)
+	docsHandler := docsHttp.NewDocsHandler(docsService)
+
 	// Initialize HTTP server
 	server := http.NewServer(cfg.Server.Port)
 	app := server.GetApp()
 
 	// Register routes
 	pingHandler.RegisterRoutes(app)
+	docsHandler.RegisterRoutes(app)
+	
+	// Register health endpoint
+	app.Get("/health", pingHttp.Health)
+	
+	// Register Swagger UI route
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	// Add a root endpoint for basic info
 	app.Get("/", func(c *fiber.Ctx) error {
