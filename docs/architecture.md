@@ -130,6 +130,23 @@ The `/docs/` folder is exclusively for project blueprint documentation (architec
   - **Production**: Manual execution through controlled deployment process
 - Use Makefile commands (`make migrate-up`, `make migrate-down`) for consistency.
 
+### Rule 11: Presentation Layer Direct Access Pattern
+The presentation layer of each module **MUST** access command and query handlers of the same module directly, not through interfaces defined in ports.
+
+- **Rationale:** The presentation layer is the entry point for external requests and should have direct access to the application layer within the same module for simplicity and performance.
+- **Implementation:** HTTP handlers in `presentation/http/` should directly instantiate and call command/query handlers from `application/command/` and `application/query/`.
+- **Prohibited:** Creating port interfaces for intra-module communication between presentation and application layers.
+- **Example:** `UserHandler` should directly use `CreateUserCommandHandler` and `GetUserQueryHandler`, not through a `UserServicePort` interface.
+
+### Rule 12: Logger Injection Requirements
+Logger must be injected to all layers except the domain layer which contains entities and value objects.
+
+- **Domain Layer Exception:** The domain layer (entities and VOs) must remain pure and cannot have logger dependencies to maintain business logic isolation.
+- **Required Injection:** All other layers (application, infrastructure, presentation) must receive logger instances through dependency injection.
+- **Implementation:** Use constructor injection to pass logger instances to handlers, repositories, and other components.
+- **Consistency:** Use the same logger interface across all modules to ensure uniform logging behavior.
+- **Example:** `CreateUserCommandHandler(logger Logger, userRepo UserRepository)` but `User` entity has no logger dependency.
+
 ---
 
 ## 4. Migration Path to Microservices
