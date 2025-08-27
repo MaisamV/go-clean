@@ -100,7 +100,47 @@ Detects if the service is in a healthy state and capable of processing requests.
 
 ---
 
-## 4. Implementation Guidelines for Features
+## 4. API Documentation (Swagger) ✅ **IMPLEMENTED**
+
+### Purpose
+Provides interactive API documentation using Swagger/OpenAPI specification for all endpoints in the service.
+
+### Specification
+- **Swagger UI Endpoint:** `GET /swagger/`
+- **OpenAPI Spec Endpoint:** `GET /api/docs/openapi.yaml`
+- **JSON Spec Endpoint:** `GET /api/docs`
+- **Response:** Interactive Swagger UI interface and OpenAPI specification files
+
+### Implementation Details
+- **Module:** `internal/docs`
+- **Handler:** `internal/docs/infrastructure/http/docs_handler.go`
+- **Service:** `internal/docs/application/docs_service.go`
+- **Domain:** `internal/docs/domain/service.go`
+- **Port:** `internal/docs/ports/docs_port.go`
+- **Adapter:** `internal/docs/infrastructure/docs_adapter.go`
+- **OpenAPI Spec:** `api/openapi.yaml`
+- **Generated Docs:** `docs/` directory (auto-generated)
+
+### Features
+- Interactive Swagger UI for testing API endpoints
+- Auto-generated documentation from code annotations
+- OpenAPI 3.0 specification format
+- Comprehensive API metadata including contact info and license
+- Support for request/response examples
+
+### Usage
+- Access Swagger UI at: `http://localhost:8080/swagger/`
+- Download OpenAPI spec from: `http://localhost:8080/api/docs/openapi.yaml`
+- API documentation is automatically updated when code annotations change
+
+### Notes
+- Uses `swaggo/swag` for generating documentation from Go annotations
+- Follows clean architecture with proper separation of concerns
+- Documentation is served both as interactive UI and downloadable specifications
+
+---
+
+## 5. Implementation Guidelines for Features
 
 ### Error Handling
 - Graceful degradation when external services are unavailable.  
@@ -124,7 +164,7 @@ Detects if the service is in a healthy state and capable of processing requests.
 
 ---
 
-## 5. Future Enhancements
+## 6. Future Enhancements
 
 ### Potential Extensions
 - Metrics collection and exposure (Prometheus format).  

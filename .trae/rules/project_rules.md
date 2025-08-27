@@ -6,4 +6,4 @@ Whenever you need to implement a new feature or add a new module, You **MUST** b
 
 After enough meaningful changes or development, create a commit with a one-line commit indicating to most important change/s, the branching, branch name and commit messages should follow gitflow rules.
 
-to run the app you should use `docker-compose up` command.
+to run the app you should use `docker-compose up --build -d` command.

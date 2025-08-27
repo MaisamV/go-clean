@@ -15,17 +15,14 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
-	"github.com/gofiber/fiber/v2"
-	fiberSwagger "github.com/swaggo/fiber-swagger"
-
-	_ "github.com/go-clean/docs" // Import generated docs
-	"github.com/go-clean/internal/ping/application"
-	pingHttp "github.com/go-clean/internal/ping/infrastructure/http"
-	docsApp "github.com/go-clean/internal/docs/application"
-	"github.com/go-clean/internal/docs/infrastructure"
-	docsHttp "github.com/go-clean/internal/docs/infrastructure/http"
+	"github.com/go-clean/internal/probes/application/query"
+	pingHttp "github.com/go-clean/internal/probes/presentation/http"
+	swaggerQuery "github.com/go-clean/internal/swagger/application/query"
+	"github.com/go-clean/internal/swagger/infrastructure"
+	swaggerHttp "github.com/go-clean/internal/swagger/presentation/http"
 	"github.com/go-clean/platform/config"
 	"github.com/go-clean/platform/http"
 	"github.com/go-clean/platform/logger"
@@ -43,13 +40,19 @@ func main() {
 	logger.Info().Msg("Starting Go Clean Architecture application")
 
 	// Initialize dependencies
-	pingService := application.NewPingService()
-	pingHandler := pingHttp.NewPingHandler(pingService)
+	pingQueryHandler := query.NewPingQueryHandler()
+	pingHandler := pingHttp.NewPingHandler(pingQueryHandler)
 
-	// Initialize docs module
-	docsAdapter := infrastructure.NewDocsAdapter("./api")
-	docsService := docsApp.NewDocsService(docsAdapter)
-	docsHandler := docsHttp.NewDocsHandler(docsService)
+	// Initialize swagger module
+	swaggerAdapter := infrastructure.NewSwaggerLoader(
+		filepath.Join("./api", "openapi.yaml"),
+		filepath.Join("./api", "swagger.html"),
+	)
+	if err := swaggerAdapter.Init(); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to initialize swagger adapter")
+	}
+	swaggerQueryHandler := swaggerQuery.NewSwaggerQueryHandler(swaggerAdapter)
+	swaggerHandler := swaggerHttp.NewDocsHandler(swaggerQueryHandler)
 
 	// Initialize HTTP server
 	server := http.NewServer(cfg.Server.Port)
@@ -57,22 +60,7 @@ func main() {
 
 	// Register routes
 	pingHandler.RegisterRoutes(app)
-	docsHandler.RegisterRoutes(app)
-	
-	// Register health endpoint
-	app.Get("/health", pingHttp.Health)
-	
-	// Register Swagger UI route
-	app.Get("/swagger/*", fiberSwagger.WrapHandler)
-
-	// Add a root endpoint for basic info
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"service": "go-clean-architecture",
-			"version": "1.0.0",
-			"status":  "running",
-		})
-	})
+	swaggerHandler.RegisterRoutes(app)
 
 	// Start server in a goroutine
 	go func() {

@@ -1,19 +1,19 @@
 package http
 
 import (
+	"github.com/go-clean/internal/swagger/application/query"
 	"github.com/gofiber/fiber/v2"
-	"github.com/go-clean/internal/docs/domain"
 )
 
 // DocsHandler handles HTTP requests for documentation endpoints
 type DocsHandler struct {
-	docsService domain.DocsService
+	swaggerQueryHandler *query.SwaggerQueryHandler
 }
 
 // NewDocsHandler creates a new instance of DocsHandler
-func NewDocsHandler(docsService domain.DocsService) *DocsHandler {
+func NewDocsHandler(swaggerQueryHandler *query.SwaggerQueryHandler) *DocsHandler {
 	return &DocsHandler{
-		docsService: docsService,
+		swaggerQueryHandler: swaggerQueryHandler,
 	}
 }
 
@@ -26,7 +26,7 @@ func NewDocsHandler(docsService domain.DocsService) *DocsHandler {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/docs/openapi.yaml [get]
 func (h *DocsHandler) GetOpenAPISpec(c *fiber.Ctx) error {
-	spec, err := h.docsService.GetOpenAPISpec()
+	spec, err := h.swaggerQueryHandler.GetOpenAPISpec()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to load OpenAPI specification",
@@ -46,7 +46,7 @@ func (h *DocsHandler) GetOpenAPISpec(c *fiber.Ctx) error {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/docs [get]
 func (h *DocsHandler) GetSwaggerUI(c *fiber.Ctx) error {
-	html, err := h.docsService.GetSwaggerHTML()
+	html, err := h.swaggerQueryHandler.GetSwaggerHTML()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to generate Swagger UI",
@@ -59,9 +59,6 @@ func (h *DocsHandler) GetSwaggerUI(c *fiber.Ctx) error {
 
 // RegisterRoutes registers the documentation routes
 func (h *DocsHandler) RegisterRoutes(app *fiber.App) {
-	api := app.Group("/api")
-	docs := api.Group("/docs")
-	
-	docs.Get("/", h.GetSwaggerUI)
-	docs.Get("/openapi.yaml", h.GetOpenAPISpec)
+	app.Get("/swagger", h.GetSwaggerUI)
+	app.Get("/openapi.yaml", h.GetOpenAPISpec)
 }

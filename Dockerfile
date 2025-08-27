@@ -40,6 +40,9 @@ COPY --from=builder /build/app /app
 # Copy config files
 COPY --from=builder /build/configs /configs
 
+# Copy API documentation files
+COPY --from=builder /build/api /api
+
 # Use non-root user
 USER appuser
 

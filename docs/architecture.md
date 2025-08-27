@@ -24,14 +24,22 @@ The core principles are:
 ├── docs/               # Contains project documentation (e.g., ADRs, architecture, features, tech stack docs).
 ├── internal/           # Contains all private application code, not importable by other projects, each subfolder must be a module.
 │   ├── module-one/     # A self-contained business domain (e.g., "users", "billing").
-│   │   ├── application/   # Contains the application use cases and business flows.
-│   │   ├── domain/        # Contains the core business models and logic (pure, no dependencies).
+│   │   ├── application/   # Contains use cases following CQRS pattern with command/ and query/ subdirectories.
+│   │   │   ├── command/   # Command handlers for write operations.
+│   │   │   └── query/     # Query handlers for read operations.
+│   │   ├── domain/        # Contains only entities and their methods/validations (pure, no dependencies).
 │   │   ├── ports/         # Defines the interfaces (contracts) this module depends on or exposes.
-│   │   └── infrastructure/# Contains implementations for external concerns (DB, APIs, handlers).
+│   │   ├── presentation/  # Contains HTTP handlers and route registration (can access application layer directly).
+│   │   │   └── http/      # HTTP handlers with RegisterRoutes methods.
+│   │   └── infrastructure/# Contains implementations for external concerns (DB, external APIs, etc.).
 │   └── module-two/     # Another self-contained business domain.
 │       ├── application/
+│       │   ├── command/
+│       │   └── query/
 │       ├── domain/
 │       ├── ports/
+│       ├── presentation/
+│       │   └── http/
 │       └── infrastructure/
 ├── platform/           # Shared, non-business foundational code (e.g., DB conn, HTTP server, logger).
 ├── pkg/                # Shared library code intended to be imported by external projects (true external reusables).
@@ -70,20 +78,20 @@ All dependencies (database connections, repository implementations, other module
 
 The final dependency graph for the entire application is assembled **only once**, in the `/cmd/app/main.go` file. This is the "wiring" layer.
 
-### Rule 4: The Domain Layer is Pure
-The domain directory within any module represents the core business logic. It must be completely self-contained and have **zero external dependencies**.
+### Rule 4: The Domain Layer is Pure and Entity-Focused
+The domain directory within any module contains **only entities** of that module and their related methods and validations. It must be completely self-contained and have **zero external dependencies**.
 
-- It **cannot** import from the application, infrastructure, or ports layers of its own module.
+- It **cannot** import from the application, infrastructure, presentation, or ports layers of its own module.
 - It **cannot** contain any code related to databases, web frameworks, or any other external concern.
+- It should only contain domain entities, value objects, and their business logic methods.
 
-### Rule 5: The Infrastructure Layer is the Boundary
-The infrastructure directory is the single, unified home for all code that interacts with the outside world. 
-This includes both:
+### Rule 5: The Presentation and Infrastructure Layer Separation
+The **presentation** layer contains HTTP handlers and route registration, and can have direct access to the application layer.
+The **infrastructure** layer contains implementations for external concerns like database repositories and third-party API clients.
 
-- **Driving Adapters (Input):** Code that drives the application, like HTTP handlers, gRPC services, and message queue consumers.
-- **Driven Adapters (Output):** Code that is driven by the application, like database repository implementations and clients for third-party APIs.
-
-This creates a clear boundary: your core logic (application + domain) is on one side, and all external details are on the other.
+- **Presentation Layer:** Contains HTTP handlers, route registration, and can directly access the application layer.
+- **Infrastructure Layer:** Contains database repositories, external API clients, and other driven adapters.
+- HTTP API routes should be registered in `RegisterRoutes` methods within each module's `presentation/http/` directory, not in main.go.
 
 ### Rule 6: The Platform Folder is for Non-Business Code
 The `/platform` directory is for shared, foundational code that is **not specific to any business domain**. 
@@ -98,7 +106,21 @@ This includes setting up the database connection pool, configuring the shared HT
 - **Integration/E2E tests**: live in `/test/`.  
 - Shared mocks or test utilities can live in `/platform/testing/`.
 
-### Rule 8: Database Migration Management
+### Rule 8: Application Layer CQRS Pattern
+The application layer must follow the CQRS (Command Query Responsibility Segregation) pattern with separate command and query folders:
+
+- **Command handlers** (in `application/command/`) handle write operations and business logic that modifies state.
+- **Query handlers** (in `application/query/`) handle read operations and data retrieval.
+- This separation ensures clear responsibility boundaries and supports scalability.
+
+### Rule 9: Documentation Folder Restrictions
+The `/docs/` folder is exclusively for project blueprint documentation (architecture, features, guidelines, tech stack, etc.).
+
+- **Prohibited:** Swagger files, OpenAPI specs, or any files needed for project runtime or building.
+- **Allowed:** Architecture docs, feature specifications, technical guidelines, ADRs (Architecture Decision Records).
+- Runtime API documentation should be placed in `/api/` directory.
+
+### Rule 10: Database Migration Management
 - All database schema changes must be managed through versioned migration files in `/scripts/migrations/`.
 - Use `golang-migrate` tool with sequential numbering (e.g., `000001_initial_schema.up.sql`).
 - Every migration must have both `.up.sql` and `.down.sql` files for rollback capability.
