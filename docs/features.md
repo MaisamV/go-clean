@@ -34,7 +34,7 @@ Provides a lightweight endpoint to verify the service is alive and responding.
 
 ---
 
-## 2. Health API
+## 2. Health API ✅ **IMPLEMENTED**
 
 ### Purpose
 A comprehensive health check that validates all critical external dependencies are accessible and functioning.
@@ -62,13 +62,23 @@ A comprehensive health check that validates all critical external dependencies a
     }
     ```
 
+### Implementation Details
+- **Module:** `internal/probes` (health sub-module)
+- **Handler:** `internal/probes/presentation/http/health_handler.go`
+- **Service:** `internal/probes/application/query/health_query.go`
+- **Domain:** `internal/probes/domain/health.go`
+- **Ports:** `internal/probes/ports/health_port.go`
+- **Infrastructure:** `internal/probes/infrastructure/database_checker.go`, `internal/probes/infrastructure/redis_checker.go`
+
 ### Usage
 - Used as a readiness probe in Kubernetes to ensure the service is fully operational before receiving traffic.
+- Available at: `http://localhost:8080/health`
 
 ### Notes
 - Checks connectivity with database and Redis.  
 - Measures response times and provides detailed status for debugging.  
-- Includes timeout mechanisms to prevent hanging.  
+- Includes timeout mechanisms to prevent hanging.
+- Follows clean architecture principles with proper separation of concerns.  
 
 ---
 
