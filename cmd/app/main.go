@@ -12,13 +12,12 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	healthQuery "github.com/go-clean/internal/probes/application/query"
+	pingQuery "github.com/go-clean/internal/probes/application/query"
 	healthInfra "github.com/go-clean/internal/probes/infrastructure"
 	healthHttp "github.com/go-clean/internal/probes/presentation/http"
 	pingHttp "github.com/go-clean/internal/probes/presentation/http"
@@ -33,66 +32,69 @@ import (
 )
 
 func main() {
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
-	// Initialize logger
+	// Initialize logger first for early error reporting
 	logger := logger.New()
 	logger.Info().Msg("Starting Go Clean Architecture application")
 
+	// Load configuration
+	logger.Info().Msg("Loading application configuration")
+	cfg, err := config.Load(logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to load configuration")
+	}
+	logger.Info().Str("environment", cfg.App.Environment).Str("version", cfg.App.Version).Msg("Configuration loaded successfully")
+
 	// Initialize database connection
-	db, err := database.NewConnection(cfg.Database)
+	db, err := database.NewConnection(cfg.Database, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to connect to database")
 	}
-	defer database.Close(db)
+	defer database.Close(db, logger)
 	logger.Info().Msg("Database connection established")
 
 	// Initialize Redis connection
-	redisClient, err := platformRedis.NewClient(cfg.Redis)
+	redisClient, err := platformRedis.NewClient(cfg.Redis, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to connect to Redis")
 	}
 	defer func() {
-		if err := platformRedis.Close(redisClient); err != nil {
+		if err := platformRedis.Close(redisClient, logger); err != nil {
 			logger.Error().Err(err).Msg("Failed to close Redis connection")
 		}
 	}()
 	logger.Info().Msg("Redis connection established")
 
-	// Initialize dependencies
-	pingQueryHandler := healthQuery.NewPingQueryHandler()
-	pingHandler := pingHttp.NewPingHandler(pingQueryHandler)
+	// Initialize ping module
+	pingQueryHandler := pingQuery.NewPingQueryHandler(logger)
+	pingHandler := pingHttp.NewPingHandler(logger, pingQueryHandler)
 
 	// Initialize health module
-	databaseChecker := healthInfra.NewDatabaseChecker(db)
-	redisChecker := healthInfra.NewRedisChecker(redisClient)
-	healthQueryHandler := healthQuery.NewGetHealthQueryHandler(databaseChecker, redisChecker)
-	healthService := healthQuery.NewHealthService(healthQueryHandler)
-	healthHandler := healthHttp.NewHealthHandler(healthService)
+	databaseChecker := healthInfra.NewDatabaseChecker(logger, db)
+	redisChecker := healthInfra.NewRedisChecker(logger, redisClient)
+	healthQueryHandler := healthQuery.NewGetHealthQueryHandler(logger, databaseChecker, redisChecker)
+	healthService := healthQuery.NewHealthService(logger, healthQueryHandler)
+	healthHandler := healthHttp.NewHealthHandler(logger, healthService)
 
 	// Initialize swagger module
-	swaggerAdapter := infrastructure.NewSwaggerLoader(
-		filepath.Join("./api", "openapi.yaml"),
-		filepath.Join("./api", "swagger.html"),
-	)
-	if err := swaggerAdapter.Init(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to initialize swagger adapter")
+	swaggerConfig := infrastructure.SwaggerConfig{
+		OpenApiFilePath: "./api/openapi.yaml",
+		SwaggerFilePath: "./api/swagger.html",
 	}
-	swaggerQueryHandler := swaggerQuery.NewSwaggerQueryHandler(swaggerAdapter)
-	swaggerHandler := swaggerHttp.NewDocsHandler(swaggerQueryHandler)
+	swaggerLoader := infrastructure.NewSwaggerLoader(logger, swaggerConfig)
+	if err := swaggerLoader.Init(); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to initialize swagger loader")
+	}
+	swaggerQueryHandler := swaggerQuery.NewSwaggerQueryHandler(logger, swaggerLoader)
+	docsHandler := swaggerHttp.NewDocsHandler(logger, swaggerQueryHandler)
 
 	// Initialize HTTP server
-	server := http.NewServer(cfg.Server.Port)
+	server := http.NewServer(cfg.Server.Port, logger)
 	app := server.GetApp()
 
 	// Register routes
 	pingHandler.RegisterRoutes(app)
 	healthHandler.RegisterRoutes(app)
-	swaggerHandler.RegisterRoutes(app)
+	docsHandler.RegisterRoutes(app, cfg.Swagger.Enabled)
 
 	// Start server in a goroutine
 	go func() {

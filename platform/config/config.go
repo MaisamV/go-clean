@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/go-clean/platform/logger"
 	"github.com/spf13/viper"
 )
 
@@ -16,6 +17,7 @@ type Config struct {
 	CORS      CORSConfig      `mapstructure:"cors"`
 	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
 	Health    HealthConfig    `mapstructure:"health"`
+	Swagger   SwaggerConfig   `mapstructure:"swagger"`
 }
 
 // ServerConfig holds server-related configuration
@@ -87,16 +89,27 @@ type HealthConfig struct {
 	RedisTimeout    time.Duration `mapstructure:"redis_timeout"`
 }
 
+// SwaggerConfig holds Swagger/API documentation configuration
+type SwaggerConfig struct {
+	Enabled  bool   `mapstructure:"enabled"`
+	FilePath string `mapstructure:"file_path"`
+}
+
 // Load loads configuration from environment variables and config files
-func Load() (*Config, error) {
+func Load(log logger.Logger) (*Config, error) {
+	log.Debug().Msg("Starting configuration loading process")
+
 	// Set defaults
+	log.Debug().Msg("Setting default configuration values")
 	setDefaults()
 
 	// Set environment variable prefix
+	log.Debug().Str("prefix", "GO_CLEAN").Msg("Configuring environment variable prefix")
 	viper.SetEnvPrefix("GO_CLEAN")
 	viper.AutomaticEnv()
 
 	// Try to read from config file
+	log.Debug().Msg("Attempting to read configuration file")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./configs")
@@ -105,15 +118,22 @@ func Load() (*Config, error) {
 	// Reading config file is optional
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			log.Error().Err(err).Msg("Failed to read configuration file")
 			return nil, err
 		}
+		log.Debug().Msg("Configuration file not found, using defaults and environment variables")
+	} else {
+		log.Info().Str("config_file", viper.ConfigFileUsed()).Msg("Configuration file loaded successfully")
 	}
 
 	var config Config
+	log.Debug().Msg("Unmarshaling configuration")
 	if err := viper.Unmarshal(&config); err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal configuration")
 		return nil, err
 	}
 
+	log.Debug().Msg("Configuration loaded and validated successfully")
 	return &config, nil
 }
 
@@ -171,4 +191,8 @@ func setDefaults() {
 	// Health check defaults
 	viper.SetDefault("health.database_timeout", "5s")
 	viper.SetDefault("health.redis_timeout", "3s")
+
+	// Swagger defaults
+	viper.SetDefault("swagger.enabled", true)
+	viper.SetDefault("swagger.file_path", "./api/swagger.html")
 }
