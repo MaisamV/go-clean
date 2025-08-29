@@ -144,8 +144,10 @@ Logger must be injected to all layers except the domain layer which contains ent
 - **Domain Layer Exception:** The domain layer (entities and VOs) must remain pure and cannot have logger dependencies to maintain business logic isolation.
 - **Required Injection:** All other layers (application, infrastructure, presentation) must receive logger instances through dependency injection.
 - **Implementation:** Use constructor injection to pass logger instances to handlers, repositories, and other components.
-- **Consistency:** Use the same logger interface across all modules to ensure uniform logging behavior.
-- **Example:** `CreateUserCommandHandler(logger Logger, userRepo UserRepository)` but `User` entity has no logger dependency.
+- **Logger Interface:** All modules must use the `logger.Logger` interface from `platform/logger` package, never import specific logging libraries directly (e.g., zerolog, logrus).
+- **Abstraction Benefit:** This allows switching underlying logger implementations without modifying module code.
+- **Consistency:** Use the same logger interface across all modules to ensure uniform logging behavior and maintain loose coupling.
+- **Example:** `CreateUserCommandHandler(logger logger.Logger, userRepo UserRepository)` but `User` entity has no logger dependency.
 
 ---
 

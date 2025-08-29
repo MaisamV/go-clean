@@ -7,3 +7,7 @@ Whenever you need to implement a new feature or add a new module, You **MUST** b
 After enough meaningful changes or development, create a commit with a one-line commit indicating to most important change/s, the branching, branch name and commit messages should follow gitflow rules.
 
 to run the app you should use `docker-compose up --build -d` command.
+
+If you want to build an output binary file from the project, you should create the output in ./bin folder.
+
+if you want to use `git diff` command, you **MUST** use it with `--no-pager` option.

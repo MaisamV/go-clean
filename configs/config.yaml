@@ -70,3 +70,8 @@ rate_limit:
 health:
   database_timeout: "5s"
   redis_timeout: "3s"
+
+# Swagger/API Documentation configuration
+swagger:
+  enabled: true
+  file_path: "./api/swagger.html"
