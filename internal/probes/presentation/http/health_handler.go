@@ -1,20 +1,23 @@
 package http
 
 import (
-	"github.com/go-clean/internal/probes/application/query"
 	"net/http"
 
+	"github.com/go-clean/internal/probes/application/query"
+	"github.com/go-clean/platform/logger"
 	"github.com/gofiber/fiber/v2"
 )
 
-// HealthHandler handles HTTP requests for health endpoints
+// HealthHandler handles health check HTTP requests
 type HealthHandler struct {
+	logger        logger.Logger
 	healthService *query.HealthService
 }
 
 // NewHealthHandler creates a new health handler
-func NewHealthHandler(healthService *query.HealthService) *HealthHandler {
+func NewHealthHandler(logger logger.Logger, healthService *query.HealthService) *HealthHandler {
 	return &HealthHandler{
+		logger:        logger,
 		healthService: healthService,
 	}
 }
@@ -30,11 +33,13 @@ func NewHealthHandler(healthService *query.HealthService) *HealthHandler {
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /health [get]
 func (h *HealthHandler) GetHealth(c *fiber.Ctx) error {
+	h.logger.Info().Str("endpoint", "/health").Msg("Health check endpoint called")
 	ctx := c.Context()
 
 	// Get health status from service
 	healthResponse, err := h.healthService.GetHealthStatus(ctx)
 	if err != nil {
+		h.logger.Error().Err(err).Msg("Failed to get health status from service")
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "Failed to check system health",
 			"details": err.Error(),
@@ -45,6 +50,9 @@ func (h *HealthHandler) GetHealth(c *fiber.Ctx) error {
 	statusCode := http.StatusOK
 	if !healthResponse.IsHealthy() {
 		statusCode = http.StatusServiceUnavailable
+		h.logger.Warn().Int("status_code", statusCode).Bool("is_healthy", false).Msg("System is unhealthy")
+	} else {
+		h.logger.Info().Int("status_code", statusCode).Bool("is_healthy", true).Msg("System is healthy")
 	}
 
 	return c.Status(statusCode).JSON(healthResponse)
@@ -52,5 +60,7 @@ func (h *HealthHandler) GetHealth(c *fiber.Ctx) error {
 
 // RegisterRoutes registers health-related routes
 func (h *HealthHandler) RegisterRoutes(router fiber.Router) {
+	h.logger.Info().Msg("Registering health routes")
 	router.Get("/health", h.GetHealth)
+	h.logger.Debug().Str("route", "/health").Msg("Health route registered")
 }
