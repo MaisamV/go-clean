@@ -42,48 +42,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/docs:
-    get:
-      tags:
-        - Documentation
-      summary: Get OpenAPI specification
-      description: Returns the OpenAPI specification in JSON format
-      operationId: getOpenAPISpec
-      responses:
-        '200':
-          description: OpenAPI specification
-          content:
-            application/json:
-              schema:
-                type: object
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/docs/swagger:
-    get:
-      tags:
-        - Documentation
-      summary: Swagger UI
-      description: Interactive API documentation using Swagger UI
-      operationId: getSwaggerUI
-      responses:
-        '200':
-          description: Swagger UI HTML page
-          content:
-            text/html:
-              schema:
-                type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /health:
     get:
       tags:
@@ -219,8 +177,6 @@ components:
 tags:
   - name: Health
     description: Health check and monitoring endpoints
-  - name: Documentation
-    description: API documentation endpoints
 
 externalDocs:
   description: Find more info about Go Clean Architecture

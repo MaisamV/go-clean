@@ -117,8 +117,7 @@ Provides interactive API documentation using Swagger/OpenAPI specification for a
 
 ### Specification
 - **Swagger UI Endpoint:** `GET /swagger/`
-- **OpenAPI Spec Endpoint:** `GET /api/docs/openapi.yaml`
-- **JSON Spec Endpoint:** `GET /api/docs`
+- **OpenAPI Spec Endpoint:** `GET /openapi.yaml`
 - **Response:** Interactive Swagger UI interface and OpenAPI specification files
 
 ### Implementation Details
@@ -140,7 +139,7 @@ Provides interactive API documentation using Swagger/OpenAPI specification for a
 
 ### Usage
 - Access Swagger UI at: `http://localhost:8080/swagger/`
-- Download OpenAPI spec from: `http://localhost:8080/api/docs/openapi.yaml`
+- Download OpenAPI spec from: `http://localhost:8080/openapi.yaml`
 - API documentation is automatically updated when code annotations change
 
 ### Notes
