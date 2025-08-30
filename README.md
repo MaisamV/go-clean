@@ -287,14 +287,17 @@ make build
 
 1. **Follow the architecture guidelines** defined in `docs/architecture.md`
 2. **Use only approved technologies** from `docs/tech-stack.md`
-3. **Update documentation** when adding features
-4. **Write tests** for all new functionality
-5. **Follow Git flow** for branching and commits
+3. **Use Wire for dependency injection** - Manual DI is strictly prohibited
+4. **Update documentation** when adding features
+5. **Write tests** for all new functionality
+6. **Follow Git flow** for branching and commits
 
 ### Code Review Checklist
 
 - [ ] No direct inter-module imports
-- [ ] Dependencies injected via constructors
+- [ ] Dependencies injected via constructors **using Wire**
+- [ ] Each module has `wire.go` file with proper build tags
+- [ ] No manual dependency injection in production code
 - [ ] Domain layer remains pure
 - [ ] Approved technologies used
 - [ ] Tests included

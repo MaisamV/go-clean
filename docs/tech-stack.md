@@ -99,10 +99,17 @@ All contributors **must follow these rules** to ensure consistency, maintainabil
 
 ## 7. Dependency Injection
 
-- **Library:** [`wire`](https://github.com/google/wire) (preferred) or manual DI.  
+- **Library:** [`wire`](https://github.com/google/wire) (**MANDATORY**).  
 - **Usage:**  
-  - All dependencies must be injected via constructors.  
-  - Final wiring done only in `/cmd/app/main.go`.  
+  - All dependencies **MUST** be injected via constructors using Wire.  
+  - Manual dependency injection is **PROHIBITED**.  
+  - Final wiring done only in `/cmd/app/main.go` using Wire's generated code.  
+  - Each module **MUST** define its providers in a `wire.go` file.  
+- **Guidelines:**  
+  - Use `//go:build wireinject` build tags only for Wire injector functions.  
+  - Provider functions should follow the pattern: `NewModuleName(deps...) *ModuleName`.  
+  - Wire provider sets should be organized by module for clarity.  
+  - Never instantiate dependencies manually in production code.  
 
 ---
 

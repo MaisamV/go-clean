@@ -72,11 +72,17 @@ Consumer modules depend on these interfaces, and provider modules implement them
 - **Example:** If the billing module needs to check if a user is active, it will depend on a `UserServicePort` interface inside `billing/ports`.  
   The users module will provide the concrete implementation.
 
-### Rule 3: Dependency Injection is Mandatory
-Modules must not instantiate their own dependencies. 
-All dependencies (database connections, repository implementations, other module services via their ports) must be passed into a module's components via constructors.
+### Rule 3: Wire Dependency Injection is Mandatory
+Modules must not instantiate their own dependencies and **MUST** use Google Wire for dependency injection. 
+All dependencies (database connections, repository implementations, other module services via their ports) must be passed into a module's components via constructors using Wire.
 
-The final dependency graph for the entire application is assembled **only once**, in the `/cmd/app/main.go` file. This is the "wiring" layer.
+**Wire Requirements:**
+- Each module **MUST** define its providers in a `wire.go` file
+- Use `//go:build wireinject` build tags only for Wire injector functions
+- Manual dependency injection is **STRICTLY PROHIBITED**
+- Provider functions should follow the pattern: `NewModuleName(deps...) *ModuleName`
+
+The final dependency graph for the entire application is assembled **only once**, in the `/cmd/app/main.go` file using Wire's generated code. This is the "wiring" layer.
 
 ### Rule 4: The Domain Layer is Pure and Entity-Focused
 The domain directory within any module contains **only entities** of that module and their related methods and validations. It must be completely self-contained and have **zero external dependencies**.
