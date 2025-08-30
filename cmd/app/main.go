@@ -12,109 +12,51 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	healthQuery "github.com/go-clean/internal/probes/application/query"
-	pingQuery "github.com/go-clean/internal/probes/application/query"
-	healthInfra "github.com/go-clean/internal/probes/infrastructure"
-	healthHttp "github.com/go-clean/internal/probes/presentation/http"
-	pingHttp "github.com/go-clean/internal/probes/presentation/http"
-	swaggerQuery "github.com/go-clean/internal/swagger/application/query"
-	"github.com/go-clean/internal/swagger/infrastructure"
-	swaggerHttp "github.com/go-clean/internal/swagger/presentation/http"
-	"github.com/go-clean/platform/config"
-	"github.com/go-clean/platform/database"
-	"github.com/go-clean/platform/http"
-	"github.com/go-clean/platform/logger"
-	platformRedis "github.com/go-clean/platform/redis"
 )
 
 func main() {
-	// Initialize logger first for early error reporting
-	logger := logger.New()
-	logger.Info().Msg("Starting Go Clean Architecture application")
-
-	// Load configuration
-	logger.Info().Msg("Loading application configuration")
-	cfg, err := config.Load(logger)
+	// Initialize application with wire-generated dependency injection
+	app, err := InitializeApplication()
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed to load configuration")
+		log.Fatalf("Failed to initialize application: %v", err)
 	}
-	logger.Info().Str("environment", cfg.App.Environment).Str("version", cfg.App.Version).Msg("Configuration loaded successfully")
 
-	// Initialize database connection
-	db, err := database.NewConnection(cfg.Database, logger)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed to connect to database")
-	}
-	defer database.Close(db, logger)
-	logger.Info().Msg("Database connection established")
+	app.Logger.Info().Msg("Starting application")
+	app.Logger.Info().Msg("All modules initialized successfully")
 
-	// Initialize Redis connection
-	redisClient, err := platformRedis.NewClient(cfg.Redis, logger)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed to connect to Redis")
-	}
-	defer func() {
-		if err := platformRedis.Close(redisClient, logger); err != nil {
-			logger.Error().Err(err).Msg("Failed to close Redis connection")
-		}
-	}()
-	logger.Info().Msg("Redis connection established")
-
-	// Initialize ping module
-	pingQueryHandler := pingQuery.NewPingQueryHandler(logger)
-	pingHandler := pingHttp.NewPingHandler(logger, pingQueryHandler)
-
-	// Initialize health module
-	databaseChecker := healthInfra.NewDatabaseChecker(logger, db)
-	redisChecker := healthInfra.NewRedisChecker(logger, redisClient)
-	healthQueryHandler := healthQuery.NewGetHealthQueryHandler(logger, databaseChecker, redisChecker)
-	healthService := healthQuery.NewHealthService(logger, healthQueryHandler)
-	healthHandler := healthHttp.NewHealthHandler(logger, healthService)
-
-	// Initialize swagger module
-	swaggerConfig := infrastructure.SwaggerConfig{
-		OpenApiFilePath: "./api/openapi.yaml",
-		SwaggerFilePath: "./api/swagger.html",
-	}
-	swaggerLoader := infrastructure.NewSwaggerLoader(logger, swaggerConfig)
-	if err := swaggerLoader.Init(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to initialize swagger loader")
-	}
-	swaggerQueryHandler := swaggerQuery.NewSwaggerQueryHandler(logger, swaggerLoader)
-	docsHandler := swaggerHttp.NewDocsHandler(logger, swaggerQueryHandler)
-
-	// Initialize HTTP server
-	server := http.NewServer(cfg.Server.Port, logger)
-	app := server.GetApp()
+	// Get the fiber app instance
+	fiberApp := app.HTTPServer.GetApp()
 
 	// Register routes
-	pingHandler.RegisterRoutes(app)
-	healthHandler.RegisterRoutes(app)
-	docsHandler.RegisterRoutes(app, cfg.Swagger.Enabled)
+	app.Logger.Info().Msg("Registering routes")
+	app.Probes.PingHandler.RegisterRoutes(fiberApp)
+	app.Probes.HealthHandler.RegisterRoutes(fiberApp)
+	app.Swagger.DocsHandler.RegisterRoutes(fiberApp, app.Config.Swagger.Enabled)
+	app.Logger.Info().Msg("Routes registered successfully")
 
-	// Start server in a goroutine
+	// Start server
+	app.Logger.Info().Str("port", app.Config.Server.Port).Msg("Starting HTTP server")
 	go func() {
-		logger.Info().Str("port", cfg.Server.Port).Msg("Starting HTTP server")
-		if err := server.Start(); err != nil {
-			logger.Fatal().Err(err).Msg("Failed to start server")
+		if err := app.HTTPServer.Start(); err != nil {
+			app.Logger.Fatal().Err(err).Msg("Failed to start HTTP server")
 		}
 	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	logger.Info().Msg("Shutting down server...")
+	app.Logger.Info().Msg("Shutting down server...")
 
 	// Gracefully shutdown the server
-	if err := server.Shutdown(); err != nil {
-		logger.Error().Err(err).Msg("Server forced to shutdown")
+	if err := app.HTTPServer.Shutdown(); err != nil {
+		app.Logger.Error().Err(err).Msg("Server forced to shutdown")
 	}
 
-	logger.Info().Msg("Server exited")
+	app.Logger.Info().Msg("Server exited")
 }
