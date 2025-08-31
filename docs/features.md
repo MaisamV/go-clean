@@ -82,7 +82,7 @@ A comprehensive health check that validates all critical external dependencies a
 
 ---
 
-## 3. Liveness API
+## 3. Liveness API ✅ **IMPLEMENTED**
 
 ### Purpose
 Detects if the service is in a healthy state and capable of processing requests. Helps Kubernetes determine if a pod should be restarted.
@@ -95,18 +95,29 @@ Detects if the service is in a healthy state and capable of processing requests.
   - **Body:**
     ```json
     {
-      "status": "alive|dead",
+      "status": "alive",
       "uptime_seconds": 3600,
       "timestamp": "2024-01-15T10:30:00Z"
     }
     ```
 
+### Implementation Details
+- **Module:** `internal/probes` (liveness sub-module)
+- **Handler:** `internal/probes/presentation/http/health_handler.go` (GetLiveness method)
+- **Service:** `internal/probes/application/query/liveness_query.go`
+- **Domain:** `internal/probes/domain/liveness.go`
+- **Query Handler:** `internal/probes/application/query/liveness_query.go`
+
 ### Usage
-- Used as a Kubernetes liveness probe to determine when a pod should be restarted.  
+- Used as a Kubernetes liveness probe to determine when a pod should be restarted.
+- Available at: `http://localhost:8080/liveness`
 
 ### Notes
-- Focuses only on the service’s internal state (not external dependencies).  
-- Should be lightweight and fast.  
+- Focuses only on the service's internal state (not external dependencies).
+- Tracks service uptime since startup.
+- Lightweight and fast response (no external dependency checks).
+- Follows clean architecture principles with proper separation of concerns.
+- Integrated with Wire dependency injection system.  
 
 ---
 

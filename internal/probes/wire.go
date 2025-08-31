@@ -42,9 +42,19 @@ func ProvideHealthService(logger logger.Logger, healthQueryHandler *healthQuery.
 	return healthQuery.NewHealthService(logger, healthQueryHandler)
 }
 
+// ProvideLivenessQueryHandler provides a liveness query handler
+func ProvideLivenessQueryHandler(logger logger.Logger) *healthQuery.GetLivenessQueryHandler {
+	return healthQuery.NewGetLivenessQueryHandler(logger)
+}
+
+// ProvideLivenessService provides a liveness service
+func ProvideLivenessService(logger logger.Logger, livenessQueryHandler *healthQuery.GetLivenessQueryHandler) *healthQuery.LivenessService {
+	return healthQuery.NewLivenessService(logger, livenessQueryHandler)
+}
+
 // ProvideHealthHandler provides a health HTTP handler
-func ProvideHealthHandler(logger logger.Logger, healthService *healthQuery.HealthService) *healthHttp.HealthHandler {
-	return healthHttp.NewHealthHandler(logger, healthService)
+func ProvideHealthHandler(logger logger.Logger, healthService *healthQuery.HealthService, livenessService *healthQuery.LivenessService) *healthHttp.HealthHandler {
+	return healthHttp.NewHealthHandler(logger, healthService, livenessService)
 }
 
 // ProbesSet is a wire provider set for all probes dependencies
@@ -55,5 +65,7 @@ var ProbesSet = wire.NewSet(
 	ProvideRedisChecker,
 	ProvideHealthQueryHandler,
 	ProvideHealthService,
+	ProvideLivenessQueryHandler,
+	ProvideLivenessService,
 	ProvideHealthHandler,
 )

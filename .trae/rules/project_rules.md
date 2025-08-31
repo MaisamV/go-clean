@@ -12,4 +12,4 @@ to run the app you should use `docker-compose up --build -d` command.
 
 If you want to build an output binary file from the project, you should create the output in ./bin folder.
 
-if you want to use `git diff` command, you **MUST** use it with `--no-pager` option.
+if you want to use `git diff` command, you **MUST** use it with `--no-pager` option. Note that you **MUST** add this option before the diff command. (e.g. `git --no-pager diff`) 
