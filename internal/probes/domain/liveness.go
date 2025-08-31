@@ -21,7 +21,7 @@ type LivenessResponse struct {
 func NewLivenessResponse(startTime time.Time) *LivenessResponse {
 	now := time.Now().UTC()
 	uptime := now.Sub(startTime)
-
+	
 	return &LivenessResponse{
 		Status:        LivenessStatusAlive,
 		UptimeSeconds: int64(uptime.Seconds()),

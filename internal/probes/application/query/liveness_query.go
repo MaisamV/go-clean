@@ -28,15 +28,15 @@ func NewGetLivenessQueryHandler(logger logger.Logger) *GetLivenessQueryHandler {
 // Handle executes the liveness check query
 func (h *GetLivenessQueryHandler) Handle(ctx context.Context, query GetLivenessQuery) (*domain.LivenessResponse, error) {
 	h.logger.Debug().Msg("Processing liveness check")
-
+	
 	// Create liveness response with uptime
 	response := domain.NewLivenessResponse(h.startTime)
-
+	
 	h.logger.Debug().
 		Int64("uptime_seconds", response.UptimeSeconds).
 		Str("status", string(response.Status)).
 		Msg("Liveness check completed")
-
+	
 	return response, nil
 }
 

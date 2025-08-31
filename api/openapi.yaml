@@ -63,6 +63,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
 
+  /liveness:
+    get:
+      tags:
+        - Health
+      summary: Liveness probe endpoint
+      description: Returns liveness status for Kubernetes liveness probes. Checks if the service is alive and capable of processing requests.
+      operationId: livenessCheck
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+        '503':
+          description: Service is dead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LivenessResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     PingResponse:
@@ -159,6 +186,29 @@ components:
           type: string
           format: date-time
           description: Last health check timestamp
+          example: "2024-01-15T10:30:00Z"
+
+    LivenessResponse:
+      type: object
+      required:
+        - status
+        - uptime_seconds
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: ["alive", "dead"]
+          description: Liveness status of the service
+          example: "alive"
+        uptime_seconds:
+          type: integer
+          format: int64
+          description: Service uptime in seconds since startup
+          example: 3600
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the liveness check was performed
           example: "2024-01-15T10:30:00Z"
 
   securitySchemes:
