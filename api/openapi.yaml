@@ -56,12 +56,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "healthy"
+                timestamp: "2024-01-15T10:30:00Z"
+                checks:
+                  database:
+                    status: "up"
+                    response_time_ms: 25
+                  redis:
+                    status: "up"
+                    response_time_ms: 5
         '503':
           description: Service or dependencies are unhealthy
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "unhealthy"
+                timestamp: "2024-01-15T10:35:00Z"
+                checks:
+                  database:
+                    status: "down"
+                    response_time_ms: 500
+                  redis:
+                    status: "up"
+                    response_time_ms: 5
 
   /liveness:
     get:
@@ -135,10 +155,11 @@ components:
       required:
         - status
         - timestamp
+        - checks
       properties:
         status:
           type: string
-          enum: ["healthy", "unhealthy"]
+          enum: [healthy, unhealthy]
           description: Overall health status
           example: "healthy"
         timestamp:
@@ -146,47 +167,27 @@ components:
           format: date-time
           description: Health check timestamp
           example: "2024-01-15T10:30:00Z"
-        version:
-          type: string
-          description: Application version
-          example: "1.0.0"
-        uptime:
-          type: string
-          description: Application uptime
-          example: "2h30m45s"
         checks:
           type: object
-          description: Individual health checks
-          properties:
-            database:
-              $ref: '#/components/schemas/HealthCheck'
-            redis:
-              $ref: '#/components/schemas/HealthCheck'
+          description: Individual health checks for components like database and redis
+          additionalProperties:
+            $ref: '#/components/schemas/ComponentHealth'
 
-    HealthCheck:
+    ComponentHealth:
       type: object
       required:
         - status
-        - response_time
+        - response_time_ms
       properties:
         status:
           type: string
-          enum: ["healthy", "unhealthy"]
+          enum: [up, down]
           description: Component health status
-          example: "healthy"
-        response_time:
-          type: string
-          description: Response time for the health check
-          example: "2ms"
-        error:
-          type: string
-          description: Error message if unhealthy
-          example: "Connection timeout"
-        last_checked:
-          type: string
-          format: date-time
-          description: Last health check timestamp
-          example: "2024-01-15T10:30:00Z"
+          example: "up"
+        response_time_ms:
+          type: integer
+          description: Response time for the health check in milliseconds
+          example: 50
 
     LivenessResponse:
       type: object

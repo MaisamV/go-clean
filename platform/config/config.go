@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"time"
 
 	"github.com/go-clean/platform/logger"
@@ -106,6 +107,7 @@ func Load(log logger.Logger) (*Config, error) {
 	// Set environment variable prefix
 	log.Debug().Str("prefix", "GO_CLEAN").Msg("Configuring environment variable prefix")
 	viper.SetEnvPrefix("GO_CLEAN")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	// Try to read from config file
